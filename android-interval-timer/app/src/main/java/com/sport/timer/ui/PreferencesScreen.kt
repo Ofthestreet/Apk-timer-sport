@@ -22,6 +22,8 @@ fun PreferencesScreen(application: Application, onBack: () -> Unit) {
     var workTime by remember { mutableStateOf(PreferencesManager.getDefaultWorkTime(application)) }
     var restTime by remember { mutableStateOf(PreferencesManager.getDefaultRestTime(application)) }
     var series by remember { mutableStateOf(PreferencesManager.getDefaultSeries(application)) }
+    var workStep by remember { mutableStateOf(PreferencesManager.getWorkStep(application)) }
+    var restStep by remember { mutableStateOf(PreferencesManager.getRestStep(application)) }
 
     Column(
         modifier = Modifier
@@ -75,16 +77,16 @@ fun PreferencesScreen(application: Application, onBack: () -> Unit) {
             ParameterPicker(
                 label = "TRAVAIL",
                 value = formatTime(workTime),
-                onDecrement = { workTime = maxOf(10, workTime - 20) },
-                onIncrement = { workTime = minOf(180, workTime + 20) },
+                onDecrement = { workTime = maxOf(10, workTime - workStep) },
+                onIncrement = { workTime = minOf(180, workTime + workStep) },
                 color = Color(0xFF4CAF50),
                 enabled = true
             )
             ParameterPicker(
                 label = "REPOS",
                 value = formatTime(restTime),
-                onDecrement = { restTime = maxOf(0, restTime - 30) },
-                onIncrement = { restTime = minOf(600, restTime + 30) },
+                onDecrement = { restTime = maxOf(0, restTime - restStep) },
+                onIncrement = { restTime = minOf(600, restTime + restStep) },
                 color = Color(0xFF2196F3),
                 enabled = true
             )
@@ -98,11 +100,46 @@ fun PreferencesScreen(application: Application, onBack: () -> Unit) {
             )
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Pas d'incrémentation (secondes)",
+            color = Color(0xFF888888),
+            fontSize = 12.sp,
+            letterSpacing = 0.5.sp,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            ParameterPicker(
+                label = "PAS TRAV.",
+                value = "${workStep}s",
+                onDecrement = { workStep = maxOf(1, workStep - 1) },
+                onIncrement = { workStep = minOf(60, workStep + 1) },
+                color = Color(0xFF4CAF50),
+                enabled = true
+            )
+            Spacer(modifier = Modifier.width(16.dp))
+            ParameterPicker(
+                label = "PAS REPOS",
+                value = "${restStep}s",
+                onDecrement = { restStep = maxOf(1, restStep - 1) },
+                onIncrement = { restStep = minOf(60, restStep + 1) },
+                color = Color(0xFF2196F3),
+                enabled = true
+            )
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = {
-                PreferencesManager.saveDefaults(application, workTime, restTime, series)
+                PreferencesManager.saveDefaults(application, workTime, restTime, series, workStep, restStep)
                 onBack()
             },
             modifier = Modifier

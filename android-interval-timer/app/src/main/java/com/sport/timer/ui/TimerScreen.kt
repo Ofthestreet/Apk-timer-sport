@@ -75,16 +75,16 @@ fun TimerScreen(viewModel: TimerViewModel, onOpenPreferences: () -> Unit = {}) {
             ParameterPicker(
                 label = "TRAVAIL",
                 value = formatTime(state.workTimeSeconds),
-                onDecrement = { viewModel.setWorkTime(maxOf(10, state.workTimeSeconds - 20)) },
-                onIncrement = { viewModel.setWorkTime(minOf(180, state.workTimeSeconds + 20)) },
+                onDecrement = { viewModel.setWorkTime(maxOf(10, state.workTimeSeconds - state.workStep)) },
+                onIncrement = { viewModel.setWorkTime(minOf(180, state.workTimeSeconds + state.workStep)) },
                 color = Color(0xFF4CAF50),
                 enabled = state.phase == Phase.IDLE
             )
             ParameterPicker(
                 label = "REPOS",
                 value = formatTime(state.restTimeSeconds),
-                onDecrement = { viewModel.setRestTime(maxOf(0, state.restTimeSeconds - 30)) },
-                onIncrement = { viewModel.setRestTime(minOf(600, state.restTimeSeconds + 30)) },
+                onDecrement = { viewModel.setRestTime(maxOf(0, state.restTimeSeconds - state.restStep)) },
+                onIncrement = { viewModel.setRestTime(minOf(600, state.restTimeSeconds + state.restStep)) },
                 color = Color(0xFF2196F3),
                 enabled = state.phase == Phase.IDLE
             )

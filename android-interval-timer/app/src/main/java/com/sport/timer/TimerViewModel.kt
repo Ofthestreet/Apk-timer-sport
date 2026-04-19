@@ -17,6 +17,8 @@ data class TimerState(
     val workTimeSeconds: Int = 60,
     val restTimeSeconds: Int = 30,
     val series: Int = 5,
+    val workStep: Int = 5,
+    val restStep: Int = 5,
     val phase: Phase = Phase.IDLE,
     val currentSeconds: Int = 0,
     val currentSerie: Int = 0,
@@ -38,7 +40,9 @@ class TimerViewModel(application: Application) : AndroidViewModel(application) {
         _state.value = TimerState(
             workTimeSeconds = PreferencesManager.getDefaultWorkTime(ctx),
             restTimeSeconds = PreferencesManager.getDefaultRestTime(ctx),
-            series = PreferencesManager.getDefaultSeries(ctx)
+            series = PreferencesManager.getDefaultSeries(ctx),
+            workStep = PreferencesManager.getWorkStep(ctx),
+            restStep = PreferencesManager.getRestStep(ctx)
         )
     }
 
