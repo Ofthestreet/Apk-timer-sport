@@ -5,9 +5,7 @@ on:
     branches: [ "**" ]
     paths:
       - 'android-interval-timer/**'
-  pull_request:
-    paths:
-      - 'android-interval-timer/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 permissions:
@@ -27,46 +25,30 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK platform 34
+        run: sdkmanager "platforms;android-34" "build-tools;34.0.0"
+
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
         with:
           gradle-version: '8.6'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Generate Gradle wrapper
-        run: |
-          cd android-interval-timer
-          gradle wrapper --gradle-version 8.6
-          chmod +x gradlew
-
       - name: Build debug APK
         run: |
           cd android-interval-timer
-          ./gradlew assembleDebug --stacktrace
+          gradle assembleDebug --stacktrace
 
-      - name: Upload artifact
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: interval-timer-debug
           path: android-interval-timer/app/build/outputs/apk/debug/*.apk
           retention-days: 30
 
-      - name: Create or update latest release
-        if: github.event_name == 'push' && github.ref != 'refs/heads/main'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest-build
-          name: "Dernier build automatique"
-          prerelease: true
-          files: android-interval-timer/app/build/outputs/apk/debug/*.apk
-          body: |
-            Build automatique depuis la branche `${{ github.ref_name }}`
-            Commit : `${{ github.sha }}`
-            Date : ${{ github.event.head_commit.timestamp }}
-
-      - name: Create versioned release on main
+      - name: Create release
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
@@ -75,5 +57,5 @@ jobs:
           prerelease: false
           files: android-interval-timer/app/build/outputs/apk/debug/*.apk
           body: |
-            Release automatique depuis `main`
+            Build automatique depuis `main`
             Commit : `${{ github.sha }}`
