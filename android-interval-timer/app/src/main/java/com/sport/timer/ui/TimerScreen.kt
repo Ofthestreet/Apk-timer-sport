@@ -31,7 +31,7 @@ import com.sport.timer.Phase
 import com.sport.timer.TimerViewModel
 
 @Composable
-fun TimerScreen(viewModel: TimerViewModel) {
+fun TimerScreen(viewModel: TimerViewModel, onOpenPreferences: () -> Unit = {}) {
     val state by viewModel.state.collectAsState()
 
     val phaseColor by animateColorAsState(
@@ -89,10 +89,10 @@ fun TimerScreen(viewModel: TimerViewModel) {
                 enabled = state.phase == Phase.IDLE
             )
             ParameterPicker(
-                label = "REPS",
-                value = state.repetitions.toString(),
-                onDecrement = { viewModel.setRepetitions(maxOf(1, state.repetitions - 1)) },
-                onIncrement = { viewModel.setRepetitions(minOf(99, state.repetitions + 1)) },
+                label = "SÉRIES",
+                value = state.series.toString(),
+                onDecrement = { viewModel.setSeries(maxOf(1, state.series - 1)) },
+                onIncrement = { viewModel.setSeries(minOf(99, state.series + 1)) },
                 color = Color(0xFFFF9800),
                 enabled = state.phase == Phase.IDLE
             )
@@ -173,7 +173,7 @@ fun TimerScreen(viewModel: TimerViewModel) {
                 )
                 if (state.phase != Phase.IDLE && state.phase != Phase.DONE) {
                     Text(
-                        text = "${state.currentRep} / ${state.repetitions}",
+                        text = "${state.currentSerie} / ${state.series}",
                         color = Color(0xFFAAAAAA),
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Medium
@@ -218,8 +218,20 @@ fun TimerScreen(viewModel: TimerViewModel) {
                 )
             }
 
-            // Spacer (symmetry)
-            Spacer(modifier = Modifier.size(64.dp))
+            // Preferences
+            Button(
+                onClick = onOpenPreferences,
+                enabled = state.phase == Phase.IDLE || state.phase == Phase.DONE,
+                modifier = Modifier.size(64.dp),
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF2A2A2A),
+                    disabledContainerColor = Color(0xFF1A1A1A)
+                ),
+                contentPadding = PaddingValues(0.dp)
+            ) {
+                Text("⚙", fontSize = 24.sp, color = if (state.phase == Phase.IDLE || state.phase == Phase.DONE) Color.White else Color(0xFF444444))
+            }
         }
     }
 }

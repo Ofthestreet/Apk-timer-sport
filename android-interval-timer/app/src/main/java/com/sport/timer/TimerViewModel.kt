@@ -1,8 +1,9 @@
 package com.sport.timer
 
+import android.app.Application
 import android.media.AudioManager
 import android.media.ToneGenerator
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -15,17 +16,31 @@ enum class Phase { IDLE, PREP, WORK, REST, DONE }
 data class TimerState(
     val workTimeSeconds: Int = 60,
     val restTimeSeconds: Int = 30,
-    val repetitions: Int = 5,
+    val series: Int = 5,
     val phase: Phase = Phase.IDLE,
     val currentSeconds: Int = 0,
-    val currentRep: Int = 0,
+    val currentSerie: Int = 0,
     val isRunning: Boolean = false
 )
 
-class TimerViewModel : ViewModel() {
+class TimerViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val ctx get() = getApplication<Application>()
 
     private val _state = MutableStateFlow(TimerState())
     val state: StateFlow<TimerState> = _state
+
+    init {
+        loadDefaults()
+    }
+
+    private fun loadDefaults() {
+        _state.value = TimerState(
+            workTimeSeconds = PreferencesManager.getDefaultWorkTime(ctx),
+            restTimeSeconds = PreferencesManager.getDefaultRestTime(ctx),
+            series = PreferencesManager.getDefaultSeries(ctx)
+        )
+    }
 
     private var timerJob: Job? = null
     private val toneGen = ToneGenerator(AudioManager.STREAM_MUSIC, 100)
@@ -42,9 +57,9 @@ class TimerViewModel : ViewModel() {
         }
     }
 
-    fun setRepetitions(count: Int) {
+    fun setSeries(count: Int) {
         if (_state.value.phase == Phase.IDLE) {
-            _state.value = _state.value.copy(repetitions = count)
+            _state.value = _state.value.copy(series = count)
         }
     }
 
@@ -61,15 +76,11 @@ class TimerViewModel : ViewModel() {
 
     fun reset() {
         timerJob?.cancel()
-        _state.value = TimerState(
-            workTimeSeconds = _state.value.workTimeSeconds,
-            restTimeSeconds = _state.value.restTimeSeconds,
-            repetitions = _state.value.repetitions
-        )
+        loadDefaults()
     }
 
     private fun startFresh() {
-        _state.value = _state.value.copy(currentRep = 1, isRunning = true)
+        _state.value = _state.value.copy(currentSerie = 1, isRunning = true)
         launchPhase(Phase.PREP, 5)
     }
 
@@ -115,8 +126,8 @@ class TimerViewModel : ViewModel() {
 
     private fun onRepComplete() {
         val s = _state.value
-        if (s.currentRep < s.repetitions) {
-            _state.value = s.copy(currentRep = s.currentRep + 1)
+        if (s.currentSerie < s.series) {
+            _state.value = s.copy(currentSerie = s.currentSerie + 1)
             launchPhase(Phase.WORK, s.workTimeSeconds)
         } else {
             _state.value = s.copy(phase = Phase.DONE, isRunning = false, currentSeconds = 0)
